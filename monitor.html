@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Monitor</title>
+  <link rel="stylesheet" href="vendors/iconfonts/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="container">
+      <div class="main-panel">
+        <div class="content">
+          <div class="row">
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 >금일 발송량</h4>
+                  <p class="card-description">
+                   <span class="text-danger" id="time"></span>
+                    <button class="btn-inverse-dark" id="today">조회</button>
+                  </p>
+
+                  <table class="table" id="listtable">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>DBTable</th>
+                        <th>Success</th>
+                        <th>Fail</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dayBody">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">금월 발송량</h4>
+                  <p class="card-description">
+                    <span class="text-danger" id="timemonth"></span>
+                    <button class="btn-inverse-dark" id="total">조회</button>
+                  </p>
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>DBTable</th>
+                        <th>Success</th>
+                        <th>Fail</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="monthBody">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12 stretch-card">
+              <div class="card" style="overflow-y:scroll;width:500px; height:300px;">
+                <div class="card-body">
+                  <h4 class="card-title">쓰레드 상태</h4>
+                  <p class="card-description">
+                    <span class="text-danger">현재 사용중인 서비스</span>
+                  </p>
+                  <table class="table table-bordered">
+                    <thead >
+                    <tr >
+                      <td class="text-success">상태</td>
+                      <td class="text-danger">마지막 체크시간</td>
+                      <td class="text-info">마지막 체크 시간과 현재 시간 차이</td>
+                    </tr>
+                    <tbody id="table">
+                    </tbody>
+                    </thead>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12 stretch-card">
+              <div class="card" style="overflow-y:scroll;width:500px; height:300px;">
+                <div class="card-body">
+                  <h4 class="card-title">서비스</h4>
+                  <p class="card-description">
+                    <span class="text-danger">현재 사용중인 서비스</span>
+                  </p>
+                  <table class="table table-bordered" id="tableservice">
+                    <tbody>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 메인 -->
+    </div>
+    <!-- 컨테이너-->
+  </div>
+  <!-- 스크립트 -->
+  <script src="vendors/js/vendor.bundle.base.js"></script>
+  <script src="vendors/js/vendor.bundle.addons.js"></script>
+  <script src="vendors/js/jquery-3.3.1.min.js"></script>
+  <script src="js/off-canvas.js"></script>
+  <script src="../../js/misc.js"></script>
+  <script src="js/Timer.js"></script>
+  <script src="js/CurrentService.js"></script>
+  <script src="text/javascript"></script>
+
+  <script>
+    <!-- 금일 -->
+      $(document).ready(function() {
+          $('#today').on("click", function () {
+              $('#dayBody').empty();
+              $.ajax({
+                  type: "POST",
+                  url: "http://localhost:8080/today/",
+                  //data: {},
+                  success: function (song) {
+                      let bal = $.parseJSON(song);
+                      for (let i = 0; i < bal.today.length; i++) {
+                          <!-- SMS -->
+                          if (bal.today[i].msg_type == "SMS") {
+                              $('#dayBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + bal.today[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + bal.today[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + bal.today[i].msb + '</td>\n' +
+                                  '                        <td class="text-danger">' + bal.today[i].msf + '</td>\n' +
+                                  '                        <td class="text-info">' + bal.today[i].mst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          <!-- LMS -->
+                          if (bal.today[i].msg_typeL == "LMS") {
+                              $('#dayBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + bal.today[i].msg_typeL + '</td>\n' +
+                                  '                        <td class="text-warning">' + bal.today[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + bal.today[i].lmsb + '</td>\n' +
+                                  '                        <td class="text-danger">' + bal.today[i].lmsf + '</td>\n' +
+                                  '                        <td class="text-info">' + bal.today[i].lmst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          <!-- MMS -->
+                          if (bal.today[i].msg_type == "MMS") {
+                              $('#dayBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + bal.today[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + bal.today[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + bal.today[i].msb + '</td>\n' +
+                                  '                        <td class="text-danger">' + bal.today[i].msf + '</td>\n' +
+                                  '                        <td class="text-info">' + bal.today[i].mst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          <!-- KKO -->
+                          if (bal.today[i].msg_type == "KKO") {
+                              $('#dayBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + bal.today[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + bal.today[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + bal.today[i].kkob + '</td>\n' +
+                                  '                        <td class="text-danger">' + bal.today[i].kkof + '</td>\n' +
+                                  '                        <td class="text-info">' + bal.today[i].kkot + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          <!-- GMS -->
+                          if (bal.today[i].msg_type == "GMS") {
+                              $('#dayBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + bal.today[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + bal.today[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + bal.today[i].gmsb + '</td>\n' +
+                                  '                        <td class="text-danger">' + bal.today[i].gmsf + '</td>\n' +
+                                  '                        <td class="text-info">' + bal.today[i].gmst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                      }
+                  },
+                      error: function (song) {
+
+                          if (song.length == null) {
+                              alert("데이터를 가져오는데 오류가 발생하였습니다.");
+                          }
+                      }
+                  });
+              });
+          });
+
+
+      <!-- 금월 -->
+      $(document).ready(function() {
+          $('#total').on("click", function () {
+              $('#monthBody').empty();
+              $.ajax({
+                  type: "POST",
+                  url: "http://localhost:8080/total/",
+                  success: function (chongbal) {
+
+                      let chong = $.parseJSON(chongbal);
+                      for (let i = 0; i < chong.total.length; i++) {
+
+                          if (chong.total[i].msg_type == "SMS") {
+                              $('#monthBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + chong.total[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + chong.total[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + chong.total[i].mss + '</td>\n' +
+                                  '                        <td class="text-danger">' + chong.total[i].msf + '</td>\n' +
+                                  '                        <td class="text-info">' + chong.total[i].mst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          if (chong.total[i].msg_type == "MMS") {
+                              $('#monthBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + chong.total[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + chong.total[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + chong.total[i].mmss + '</td>\n' +
+                                  '                        <td class="text-danger">' + chong.total[i].mmsf + '</td>\n' +
+                                  '                        <td class="text-info">' + chong.total[i].mmst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          if (chong.total[i].msg_typeL == "LMS") {
+                              $('#monthBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + chong.total[i].msg_typeL + '</td>\n' +
+                                  '                        <td class="text-warning">' + chong.total[i].tablenameL + '</td>\n' +
+                                  '                        <td class="text-success">' + chong.total[i].lmss + '</td>\n' +
+                                  '                        <td class="text-danger">' + chong.total[i].lmsf + '</td>\n' +
+                                  '                        <td class="text-info">' + chong.total[i].lmst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          if (chong.total[i].msg_type == "KAKAO") {
+                              $('#monthBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + chong.total[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + chong.total[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + chong.total[i].kkos + '</td>\n' +
+                                  '                        <td class="text-danger">' + chong.total[i].kkof + '</td>\n' +
+                                  '                        <td class="text-info">' + chong.total[i].kkot + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          if (chong.total[i].msg_type == "GMS") {
+                              $('#monthBody').append('                      <tr>\n' +
+                                  '                        <td class="text-primary">' + chong.total[i].msg_type + '</td>\n' +
+                                  '                        <td class="text-warning">' + chong.total[i].tablename + '</td>\n' +
+                                  '                        <td class="text-success">' + chong.total[i].gmss + '</td>\n' +
+                                  '                        <td class="text-danger">' + chong.total[i].gmsf + '</td>\n' +
+                                  '                        <td class="text-info">' + chong.total[i].gmst + '</td>\n' +
+                                  '                      </tr>');
+                          }
+                          //$('#kkochong').text("KKO 총 전송량 : " + chong.total[0].kko);
+                      }
+                  },
+                  error: function (chongbal) {
+                      if (chongbal.length == null) {
+                          alert("데이터를 가져오는데 오류가 발생하였습니다.");
+                      }
+                  }
+              });
+          });
+      });
+
+  </script>
+  <script>
+
+  </script>
+</body>
+</html>
